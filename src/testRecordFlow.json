@@ -1,0 +1,263 @@
+{
+    "Flow": {
+      "actionCalls": [
+        {
+          "name": "test_actions",
+          "label": "test actions",
+          "locationX": 578,
+          "locationY": 528,
+          "actionName": "CollaborationGroup.NewGroupMember",
+          "actionType": "quickAction",
+          "connector": {
+            "targetReference": "test_subflow"
+          },
+          "flowTransactionModel": "CurrentTransaction",
+          "inputParameters": [
+            {
+              "name": "MemberId",
+              "value": {
+                "elementReference": "yes"
+              }
+            },
+            {
+              "name": "contextId",
+              "value": {
+                "stringValue": ""
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test_Email_Alert",
+          "label": "Test Email Alert",
+          "locationX": 578,
+          "locationY": 768,
+          "actionName": "Account.accout",
+          "actionType": "emailAlert",
+          "flowTransactionModel": "CurrentTransaction",
+          "inputParameters": {
+            "name": "SObjectRowId",
+            "value": {
+              "elementReference": "$Record.Id"
+            }
+          }
+        }
+      ],
+      "apiVersion": 56,
+      "assignments": {
+        "name": "SET_Assignments",
+        "label": "SET Assignments",
+        "locationX": 138,
+        "locationY": 648,
+        "assignmentItems": {
+          "assignToReference": "VAR_1",
+          "operator": "Assign",
+          "value": {
+            "elementReference": "LOOP_ALL_RECORDS.AccountSource"
+          }
+        },
+        "connector": {
+          "targetReference": "LOOP_ALL_RECORDS"
+        }
+      },
+      "collectionProcessors": [
+        {
+          "name": "FILTER_null",
+          "elementSubtype": "FilterCollectionProcessor",
+          "label": "FILTER null",
+          "locationX": 578,
+          "locationY": 408,
+          "assignNextValueToReference": "currentItem_FILTER_null",
+          "collectionProcessorType": "FilterCollectionProcessor",
+          "collectionReference": "GET_PARENT_ACCOUNT",
+          "conditionLogic": "and",
+          "conditions": {
+            "leftValueReference": "currentItem_FILTER_null.Active__c",
+            "operator": "EqualTo",
+            "rightValue": {
+              "stringValue": ""
+            }
+          },
+          "connector": {
+            "targetReference": "test_actions"
+          }
+        },
+        {
+          "name": "SORT_Something",
+          "elementSubtype": "SortCollectionProcessor",
+          "label": "SORT Something",
+          "locationX": 578,
+          "locationY": 288,
+          "collectionProcessorType": "SortCollectionProcessor",
+          "collectionReference": "GET_PARENT_ACCOUNT",
+          "connector": {
+            "targetReference": "FILTER_null"
+          },
+          "sortOptions": {
+            "doesPutEmptyStringAndNullFirst": false,
+            "sortField": "Active__c",
+            "sortOrder": "Asc"
+          }
+        }
+      ],
+      "decisions": {
+        "name": "IS_NEW_RECORD",
+        "label": "IS NEW RECORD?",
+        "locationX": 182,
+        "locationY": 288,
+        "defaultConnector": {
+          "targetReference": "CREATE_Clone_account"
+        },
+        "defaultConnectorLabel": "Default Outcome",
+        "rules": {
+          "name": "yes",
+          "conditionLogic": "and",
+          "conditions": {
+            "leftValueReference": "$Record.AccountNumber",
+            "operator": "EqualTo",
+            "rightValue": {
+              "stringValue": 1
+            }
+          },
+          "connector": {
+            "targetReference": "GET_PARENT_ACCOUNT"
+          },
+          "label": "yes"
+        }
+      },
+      "environments": "Default",
+      "interviewLabel": "TEST Flow for react {!$Flow.CurrentDateTime}",
+      "label": "TEST Flow for react",
+      "loops": {
+        "name": "LOOP_ALL_RECORDS",
+        "label": "LOOP ALL RECORDS",
+        "locationX": 50,
+        "locationY": 528,
+        "collectionReference": "GET_PARENT_ACCOUNT",
+        "iterationOrder": "Asc",
+        "nextValueConnector": {
+          "targetReference": "SET_Assignments"
+        },
+        "noMoreValuesConnector": {
+          "targetReference": "UPDATE"
+        }
+      },
+      "processMetadataValues": [
+        {
+          "name": "BuilderType",
+          "value": {
+            "stringValue": "LightningFlowBuilder"
+          }
+        },
+        {
+          "name": "CanvasMode",
+          "value": {
+            "stringValue": "AUTO_LAYOUT_CANVAS"
+          }
+        },
+        {
+          "name": "OriginBuilderType",
+          "value": {
+            "stringValue": "LightningFlowBuilder"
+          }
+        }
+      ],
+      "processType": "AutoLaunchedFlow",
+      "recordCreates": {
+        "name": "CREATE_Clone_account",
+        "label": "CREATE Clone account",
+        "locationX": 314,
+        "locationY": 408,
+        "connector": {
+          "targetReference": "DELETE_Clone"
+        },
+        "inputReference": "$Record"
+      },
+      "recordDeletes": {
+        "name": "DELETE_Clone",
+        "label": "DELETE Clone",
+        "locationX": 314,
+        "locationY": 528,
+        "inputReference": "LOOP_ALL_RECORDS"
+      },
+      "recordLookups": {
+        "name": "GET_PARENT_ACCOUNT",
+        "label": "GET PARENT ACCOUNT",
+        "locationX": 50,
+        "locationY": 408,
+        "assignNullValuesIfNoRecordsFound": false,
+        "connector": {
+          "targetReference": "LOOP_ALL_RECORDS"
+        },
+        "filterLogic": "and",
+        "filters": {
+          "field": "ParentId",
+          "operator": "EqualTo",
+          "value": {
+            "elementReference": "$Record.Id"
+          }
+        },
+        "getFirstRecordOnly": false,
+        "object": "Account",
+        "storeOutputAutomatically": true
+      },
+      "recordUpdates": {
+        "name": "UPDATE",
+        "label": "UPDATE",
+        "locationX": 50,
+        "locationY": 864,
+        "inputAssignments": {
+          "field": "BillingCountry",
+          "value": {
+            "elementReference": "VAR_1"
+          }
+        },
+        "inputReference": "$Record"
+      },
+      "start": {
+        "locationX": 254,
+        "locationY": 0,
+        "connector": {
+          "targetReference": "IS_NEW_RECORD"
+        },
+        "filterFormula": "ISNEW()",
+        "object": "Account",
+        "recordTriggerType": "CreateAndUpdate",
+        "scheduledPaths": {
+          "connector": {
+            "targetReference": "SORT_Something"
+          },
+          "pathType": "AsyncAfterCommit"
+        },
+        "triggerType": "RecordAfterSave"
+      },
+      "status": "InvalidDraft",
+      "subflows": {
+        "name": "test_subflow",
+        "label": "test subflow",
+        "locationX": 578,
+        "locationY": 648,
+        "connector": {
+          "targetReference": "Test_Email_Alert"
+        },
+        "flowName": "runtime_industries_recurrence__Schdlr"
+      },
+      "variables": [
+        {
+          "name": "currentItem_FILTER_null",
+          "dataType": "SObject",
+          "isCollection": false,
+          "isInput": false,
+          "isOutput": false,
+          "objectType": "Account"
+        },
+        {
+          "name": "VAR_1",
+          "dataType": "String",
+          "isCollection": false,
+          "isInput": false,
+          "isOutput": false
+        }
+      ]
+    }
+  }
