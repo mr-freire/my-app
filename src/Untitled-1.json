@@ -1,0 +1,69 @@
+{
+    "Flow": {
+        "actionCalls": [{
+                "name": "EMAIL_SendEmailtoContact",
+                "label": "EMAIL - Send Email to Contact",
+                "actionName": "Case.Support_Case_Created",
+                "inputParameters": {
+                    "name": "SObjectRowId",
+                    "value": {
+                        "elementReference": "$Record.Id"
+                    }
+                }
+            },
+            {
+                "name": "EMAIL_SendEmailtoQueue",
+                "label": "EMAIL - Send Email to Queue",
+                "actionType": "emailAlert"
+            }
+        ],
+        "apiVersion": 56,
+        "decisions": {
+            "name": "DEC_Record_has_Contact",
+            "label": "DEC Record has Contact",
+            "rules": {
+                "name": "Yes",
+                "conditionLogic": "and",
+                "conditions": {
+                    "leftValueReference": "$Record.ContactId",
+                    "operator": "NotEqualTo",
+                    "rightValue": {
+                        "stringValue": ""
+                    }
+                },
+                "connector": {
+                    "targetReference": "EMAIL_SendEmailtoQueue"
+                },
+                "label": "Yes"
+            }
+        },
+        "recordLookups": [{
+                "name": "GET_Support_Case_Record_Type",
+                "label": "GET Support Case Record Type",
+                "assignNullValuesIfNoRecordsFound": false,
+                "connector": {
+                    "targetReference": "GET_Support_Queue"
+                }
+            },
+            {
+                "name": "GET_Support_Queue",
+                "label": "GET Support Queue",
+                "connector": {
+                    "targetReference": "SET_Queue_as_Case_Owner"
+                }
+            }
+        ],
+        "recordUpdates": {
+            "name": "SET_Queue_as_Case_Owner",
+            "label": "SET Queue as Case Owner",
+            "connector": {
+                "targetReference": "DEC_Record_has_Contact"
+            }
+        },
+        "start": {
+            "connector": {
+                "targetReference": "GET_Support_Case_Record_Type"
+            }
+        }
+    }
+}
